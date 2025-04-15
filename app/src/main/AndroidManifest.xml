@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FoodDispenserController"
         tools:targetApi="31">
+        <activity android:name="ControllerActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
