@@ -40,4 +40,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // https://mvnrepository.com/artifact/com.google.android.gms/play-services-vision
+    implementation("com.google.android.gms:play-services-vision:20.1.3")
+    // https://mvnrepository.com/artifact/com.google.zxing/core
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }
