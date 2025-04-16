@@ -33,12 +33,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button skipBtn = findViewById(R.id.button3);
-        skipBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                var intent = new Intent(MainActivity.this, ControllerActivity.class);
-                startActivity(intent);
-            }
+        skipBtn.setOnClickListener(v -> {
+            var intent = new Intent(MainActivity.this, ControllerActivity.class);
+            startActivity(intent);
         });
 
         Button scanBtn = findViewById(R.id.scanCodeButton);

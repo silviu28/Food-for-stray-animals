@@ -59,19 +59,37 @@ public class ControllerActivity extends AppCompatActivity {
         SeekBar steerBar = this.findViewById(R.id.steeringAngleBar);
         steerBar.setMin(-180);
         steerBar.setMax(180);
-        steerBar.setOnClickListener(v -> {
-            this.connectedDevice.setSteeringAngle((float)steerBar.getProgress());
-            TextView steerText = this.findViewById(R.id.steeringText);
-            steerText.setText("Steering: " + steerBar.getProgress() + "°");
+        steerBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                connectedDevice.setSteeringAngle((float) steerBar.getProgress());
+                TextView steerText = findViewById(R.id.steeringText);
+                steerText.setText("Steering: " + steerBar.getProgress() + "°");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
         SeekBar speedBar = this.findViewById(R.id.engineSpeedBar);
         speedBar.setMin(0);
         speedBar.setMax(10);
-        speedBar.setOnClickListener(v -> {
-            this.connectedDevice.setSpeed(speedBar.getProgress());
-            TextView speedText = this.findViewById(R.id.engineText);
-            speedText.setText("Engine: " + speedBar.getProgress() + " km/h");
+        speedBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                connectedDevice.setSpeed(speedBar.getProgress());
+                TextView speedText = findViewById(R.id.engineText);
+                speedText.setText("Engine: " + speedBar.getProgress() + " km/h");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 
@@ -83,7 +101,8 @@ public class ControllerActivity extends AppCompatActivity {
                         Thread.sleep(1000);
                     }
                     else {
-                        Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(() ->
+                        Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show());
                         break;
                     }
                 }
