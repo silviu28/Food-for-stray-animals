@@ -1,9 +1,11 @@
 package com.example.fooddispensercontroller;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -14,6 +16,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+
+import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,12 +47,20 @@ public class MainActivity extends AppCompatActivity {
                 integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
                 integrator.setPrompt("Scan a QR Code");
                 integrator.setCameraId(0);
+                integrator.setOrientationLocked(false);
                 integrator.setBeepEnabled(false);
                 integrator.setBarcodeImageEnabled(false);
+                integrator.setCaptureActivity(CaptureActivityAllOrientations.class);
                 integrator.initiateScan();
 
             }
         );
+
+        Button checkBtn = findViewById(R.id.validateCodeButton);
+        checkBtn.setOnClickListener(v -> {
+                @NotNull TextView codeField = findViewById(R.id.codeText);
+                this.validateCode(codeField.getText().toString());
+            });
     }
 
     @Override
@@ -56,12 +68,28 @@ public class MainActivity extends AppCompatActivity {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
             if (result.getContents() == null) {
-                System.out.println("Cancelled");
+                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
             } else {
-                System.out.println("Scanned: " + result.getContents());
+                @NotNull TextView codeField = findViewById(R.id.codeText);
+                codeField.setText(result.getContents());
+                this.validateCode(result.getContents());
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+            Toast.makeText(this, "Scan failed", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void validateCode(String code) {
+        // aici trebuie validat codul dat de placa
+        if (code.length() != 6 || !code.matches("[0-9]+")) {
+            var dialog = new AlertDialog.Builder(this);
+            dialog.setMessage("Invalid code. Try again");
+            dialog.setPositiveButton("Ok", null);
+            dialog.setCancelable(true);
+            dialog.show();
+            return;
+        }
+        Toast.makeText(this, "Validating...", Toast.LENGTH_LONG).show();
     }
 }
