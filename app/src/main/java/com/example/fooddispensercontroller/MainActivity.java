@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         scanBtn.setOnClickListener(v -> {
                 var integrator = new IntentIntegrator(MainActivity.this);
                 integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-                integrator.setPrompt("Scan a QR Code");
+                integrator.setPrompt("Scan the QR code shown on the device");
                 integrator.setCameraId(0);
                 integrator.setOrientationLocked(false);
                 integrator.setBeepEnabled(false);

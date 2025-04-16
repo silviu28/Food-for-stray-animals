@@ -1,5 +1,6 @@
 package com.example.fooddispensercontroller;
 public class Device {
+    private boolean engineOn = false;
     private boolean tipperReleased = false;
     private double speed = 0.0;
     private float steeringAngle = 0.0f;
@@ -12,6 +13,10 @@ public class Device {
     public Device(String address)
     {
         this.address = address;
+    }
+
+    public boolean getEngineState() {
+        return engineOn;
     }
 
     public boolean getTipperState() {
@@ -55,6 +60,10 @@ public class Device {
             default:
                 throw new IllegalArgumentException("Invalid direction");
         }
+    }
+
+    public void setEngineState(boolean engineOn) {
+        this.engineOn = engineOn;
     }
 
     public void setTipperState(boolean tipperReleased) {
