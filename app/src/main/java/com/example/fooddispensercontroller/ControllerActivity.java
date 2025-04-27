@@ -2,6 +2,7 @@ package com.example.fooddispensercontroller;
 
 import static java.lang.Thread.sleep;
 
+import android.bluetooth.BluetoothSocket;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -16,7 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class ControllerActivity extends AppCompatActivity {
 
-    private Device connectedDevice = new Device(null);
+    private Device connectedDevice = new Device();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +50,10 @@ public class ControllerActivity extends AppCompatActivity {
         Button emergencyBtn = this.findViewById(R.id.emergencyButton);
         Button tipperBtn = this.findViewById(R.id.tipperButton);
 
-        emergencyBtn.setOnClickListener(v -> this.connectedDevice.setEmergencyLightsState(!connectedDevice.getEmergencyLightsState()));
-        engineBtn.setOnClickListener(v -> this.connectedDevice.setEngineState(!connectedDevice.getEngineState()));
-        brakeBtn.setOnClickListener(v -> this.connectedDevice.setBrakesState(!connectedDevice.getBrakesState()));
-        tipperBtn.setOnClickListener(v -> this.connectedDevice.setTipperState(!connectedDevice.getTipperState()));
+        emergencyBtn.setOnClickListener(v -> this.connectedDevice.toggleEmergencyLights());
+        engineBtn.setOnClickListener(v -> this.connectedDevice.toggleMotor());
+        brakeBtn.setOnClickListener(v -> this.connectedDevice.toggleBrakes());
+        tipperBtn.setOnClickListener(v -> this.connectedDevice.toggleTipper());
     }
 
     private void addSliderListeners() {

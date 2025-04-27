@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 btAdapter.startDiscovery();
             }
-            scanHandler.postDelayed(this, 5000);
+            scanHandler.postDelayed(this, 5000); // Repeat every 5s
         }
     };
 
@@ -67,13 +67,10 @@ public class MainActivity extends AppCompatActivity {
                     foundDevices.add(deviceInfo);
 
                     runOnUiThread(() -> {
-                        Button deviceView = new Button(MainActivity.this);
+                        TextView deviceView = new TextView(MainActivity.this);
                         deviceView.setText(deviceInfo);
                         deviceView.setPadding(32, 16, 32, 16);
                         devicesContainer.addView(deviceView);
-                        deviceView.setOnClickListener(v -> {
-                            Toast.makeText(MainActivity.this, "Connecting to " + deviceInfo, Toast.LENGTH_LONG).show();
-                        });
                     });
                 }
             }
