@@ -31,9 +31,9 @@ public class Device {
     private OutputStream outputStream;
 
     public Device() { /* empty, for debug */ }
-    public Device(BluetoothSocket socket)
-    {
+    public Device(BluetoothSocket socket) throws IOException {
         this.socket = socket;
+        this.outputStream = socket.getOutputStream();
         this.address = socket.getRemoteDevice().getAddress();
     }
 

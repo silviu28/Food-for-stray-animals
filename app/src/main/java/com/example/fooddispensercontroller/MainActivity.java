@@ -198,7 +198,9 @@ public class MainActivity extends AppCompatActivity {
             TextView deviceView = new TextView(MainActivity.this);
             deviceView.setText(deviceInfo);
             deviceView.setPadding(32, 16, 32, 16);
+            deviceView.setOnClickListener(v -> Toast.makeText(MainActivity.this, "Connecting to " + deviceInfo + "...", Toast.LENGTH_SHORT).show());
             devicesContainer.addView(deviceView);
+
         });
     }
 
