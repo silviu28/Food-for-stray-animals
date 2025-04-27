@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 //import androidx.core.content.ContextCompat;
@@ -28,15 +29,17 @@ import androidx.core.app.ActivityCompat;
 //import com.google.zxing.integration.android.IntentIntegrator;
 //import com.google.zxing.integration.android.IntentResult;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "BluetoothActivity";
     private BluetoothAdapter btAdapter;
     private LinearLayout devicesContainer;
-    private final List<String> foundDevices = new ArrayList<>();
+    private final List<BluetoothDevice> foundDevices = new ArrayList<>();
     private final Handler scanHandler = new Handler();
     private boolean isScanning = false;
 
@@ -61,10 +64,9 @@ public class MainActivity extends AppCompatActivity {
                     showRejectMessage();
 
                 if (device != null && device.getName() != null) {
-                    String deviceInfo = device.getName() + "\n" + device.getAddress();
-                    if (!foundDevices.contains(deviceInfo)) {
-                        foundDevices.add(deviceInfo);
-                        addDeviceToView(deviceInfo);
+                    if (!foundDevices.contains(device)) {
+                        foundDevices.add(device);
+                        addDeviceToView(device);
                     }
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
@@ -166,9 +168,9 @@ public class MainActivity extends AppCompatActivity {
             for (BluetoothDevice device : btAdapter.getBondedDevices()) {
                 if (device.getName() != null) {
                     String deviceInfo = device.getName() + "\n" + device.getAddress();
-                    if (!foundDevices.contains(deviceInfo)) {
-                        foundDevices.add(deviceInfo);
-                        addDeviceToView(deviceInfo);
+                    if (!foundDevices.contains(device)) {
+                        foundDevices.add(device);
+                        addDeviceToView(device);
                     }
                 }
             }
@@ -193,12 +195,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addDeviceToView(String deviceInfo) {
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private void addDeviceToView(BluetoothDevice device) {
         runOnUiThread(() -> {
             TextView deviceView = new TextView(MainActivity.this);
-            deviceView.setText(deviceInfo);
+            deviceView.setText(device.getName() + " " + device.getAddress());
             deviceView.setPadding(32, 16, 32, 16);
-            deviceView.setOnClickListener(v -> Toast.makeText(MainActivity.this, "Connecting to " + deviceInfo + "...", Toast.LENGTH_SHORT).show());
+            deviceView.setOnClickListener(v -> connect(device.getAddress()));
             devicesContainer.addView(deviceView);
 
         });
@@ -286,5 +289,20 @@ public class MainActivity extends AppCompatActivity {
     private void showRejectMessage() {
         Toast.makeText(this, "Nearby devices permission denied." +
                 " Enable when prompted", Toast.LENGTH_LONG).show();
+    }
+
+    private void connect(String deviceAddress) {
+        var device = btAdapter.getRemoteDevice(deviceAddress);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+            showRejectMessage();
+
+        Toast.makeText(this, "Connecting to " + device.getName() + "...", Toast.LENGTH_SHORT).show();
+
+        runOnUiThread(() -> {
+            Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, ControllerActivity.class);
+            intent.putExtra("deviceAddress", deviceAddress);
+            startActivity(intent);
+        });
     }
 }

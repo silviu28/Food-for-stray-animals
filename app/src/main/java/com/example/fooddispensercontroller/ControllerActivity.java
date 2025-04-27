@@ -1,28 +1,45 @@
 package com.example.fooddispensercontroller;
 
-import static java.lang.Thread.sleep;
-
-import android.bluetooth.BluetoothSocket;
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import java.io.IOException;
+import java.util.UUID;
 
 public class ControllerActivity extends AppCompatActivity {
 
-    private Device connectedDevice = new Device();
+    private Device connectedDevice;
 
+    @RequiresPermission(allOf = {Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_controller);
+
+        var adapter = BluetoothAdapter.getDefaultAdapter();
+
+        var deviceAddress = getIntent().getStringExtra("deviceAddress");
+        if (deviceAddress != null) {
+            var device = adapter.getRemoteDevice(deviceAddress);
+            try {
+                var socket = device.createRfcommSocketToServiceRecord(
+                        UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+                );
+                adapter.cancelDiscovery();
+                socket.connect();
+                this.connectedDevice = new Device(socket);
+            } catch (IOException e) {
+                Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show();
+            }
+        }
 
         this.addDirectionListeners();
         this.addLightListeners();
