@@ -23,10 +23,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+//import androidx.core.content.ContextCompat;
+//
+//import com.google.zxing.integration.android.IntentIntegrator;
+//import com.google.zxing.integration.android.IntentResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,14 +91,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        Button scanBtn = findViewById(R.id.scanCodeButton);
-        scanBtn.setOnClickListener(v -> startQrCodeScanner());
-
-        Button checkBtn = findViewById(R.id.validateCodeButton);
-        checkBtn.setOnClickListener(v -> {
-            TextView codeField = findViewById(R.id.codeText);
-            validateCode(codeField.getText().toString());
-        });
+//        Button scanBtn = findViewById(R.id.scanCodeButton);
+//        scanBtn.setOnClickListener(v -> startQrCodeScanner());
+//
+//        Button checkBtn = findViewById(R.id.validateCodeButton);
+//        checkBtn.setOnClickListener(v -> {
+//            TextView codeField = findViewById(R.id.codeText);
+//            validateCode(codeField.getText().toString());
+//        });
     }
 
     private void initBluetooth() {
@@ -220,43 +220,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startQrCodeScanner() {
-        var integrator = new IntentIntegrator(this);
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-        integrator.setPrompt("Scan the QR code shown on the device");
-        integrator.setCameraId(0);
-        integrator.setOrientationLocked(false);
-        integrator.setBeepEnabled(false);
-        integrator.setBarcodeImageEnabled(false);
-        integrator.setCaptureActivity(CaptureActivityAllOrientations.class);
-        integrator.initiateScan();
-    }
+//    private void startQrCodeScanner() {
+//        var integrator = new IntentIntegrator(this);
+//        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+//        integrator.setPrompt("Scan the QR code shown on the device");
+//        integrator.setCameraId(0);
+//        integrator.setOrientationLocked(false);
+//        integrator.setBeepEnabled(false);
+//        integrator.setBarcodeImageEnabled(false);
+//        integrator.setCaptureActivity(CaptureActivityAllOrientations.class);
+//        integrator.initiateScan();
+//    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (result.getContents() == null) {
-                Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
-            } else {
-                TextView codeField = findViewById(R.id.codeText);
-                codeField.setText(result.getContents());
-                validateCode(result.getContents());
-            }
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+//        if (result != null) {
+//            if (result.getContents() == null) {
+//                Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
+//            } else {
+//                TextView codeField = findViewById(R.id.codeText);
+//                codeField.setText(result.getContents());
+//                validateCode(result.getContents());
+//            }
+//        }
+//    }
 
-    private void validateCode(String code) {
-        if (code.length() != 6 || !code.matches("[0-9]+")) {
-            new AlertDialog.Builder(this)
-                    .setMessage("Invalid code. It should be 6 digits.")
-                    .setPositiveButton("OK", null)
-                    .show();
-            return;
-        }
-        Toast.makeText(this, "Validating code...", Toast.LENGTH_SHORT).show();
-    }
+//    private void validateCode(String code) {
+//        if (code.length() != 6 || !code.matches("[0-9]+")) {
+//            new AlertDialog.Builder(this)
+//                    .setMessage("Invalid code. It should be 6 digits.")
+//                    .setPositiveButton("OK", null)
+//                    .show();
+//            return;
+//        }
+//        Toast.makeText(this, "Validating code...", Toast.LENGTH_SHORT).show();
+//    }
 
     @Override
     protected void onResume() {
