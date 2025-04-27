@@ -45,11 +45,13 @@ public class ControllerActivity extends AppCompatActivity {
     }
 
     private void addLightListeners() {
+        Button headLightsBtn = this.findViewById(R.id.headlightsButton);
         Button engineBtn = this.findViewById(R.id.ioEngineButton);
         Button brakeBtn = this.findViewById(R.id.brakeButton);
         Button emergencyBtn = this.findViewById(R.id.emergencyButton);
         Button tipperBtn = this.findViewById(R.id.tipperButton);
 
+        headLightsBtn.setOnClickListener(v -> this.connectedDevice.toggleHeadlights());
         emergencyBtn.setOnClickListener(v -> this.connectedDevice.toggleEmergencyLights());
         engineBtn.setOnClickListener(v -> this.connectedDevice.toggleMotor());
         brakeBtn.setOnClickListener(v -> this.connectedDevice.toggleBrakes());

@@ -35,57 +35,44 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "BluetoothActivity";
     private BluetoothAdapter btAdapter;
-
     private LinearLayout devicesContainer;
     private final List<String> foundDevices = new ArrayList<>();
-
     private final Handler scanHandler = new Handler();
-    private final Runnable scanRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (btAdapter != null && btAdapter.isEnabled()) {
-                if (btAdapter.isDiscovering()) {
-                    btAdapter.cancelDiscovery();
-                }
-                btAdapter.startDiscovery();
-            }
-            scanHandler.postDelayed(this, 5000); // Repeat every 5s
-        }
-    };
+    private boolean isScanning = false;
 
-    private boolean isReceiverRegistered = false;
+    // Bluetooth enable request launcher
+    private final ActivityResultLauncher<Intent> enableBtLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    startBluetoothDiscovery();
+                } else {
+                    Toast.makeText(this, "Bluetooth is required", Toast.LENGTH_SHORT).show();
+                }
+            });
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return;
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+                    showRejectMessage();
+
                 if (device != null && device.getName() != null) {
                     String deviceInfo = device.getName() + "\n" + device.getAddress();
-                    if (foundDevices.contains(deviceInfo)) return;
-                    foundDevices.add(deviceInfo);
-
-                    runOnUiThread(() -> {
-                        TextView deviceView = new TextView(MainActivity.this);
-                        deviceView.setText(deviceInfo);
-                        deviceView.setPadding(32, 16, 32, 16);
-                        devicesContainer.addView(deviceView);
-                    });
+                    if (!foundDevices.contains(deviceInfo)) {
+                        foundDevices.add(deviceInfo);
+                        addDeviceToView(deviceInfo);
+                    }
                 }
-            }
-        }
-    };
-
-    private final BroadcastReceiver btStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                if (state == BluetoothAdapter.STATE_ON) {
-                    startBluetoothDiscovery(); // Resume discovery if Bluetooth just turned on
-                }
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                scanHandler.postDelayed(() -> {
+                    if (isScanning && btAdapter != null) {
+                        btAdapter.startDiscovery();
+                    }
+                }, 1000);
             }
         }
     };
@@ -96,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         devicesContainer = findViewById(R.id.devicesContainer);
-        initDeviceSearch();
+        initBluetooth();
 
         Button skipBtn = findViewById(R.id.button3);
         skipBtn.setOnClickListener(v -> {
@@ -105,17 +92,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button scanBtn = findViewById(R.id.scanCodeButton);
-        scanBtn.setOnClickListener(v -> {
-            var integrator = new IntentIntegrator(MainActivity.this);
-            integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-            integrator.setPrompt("Scan the QR code shown on the device");
-            integrator.setCameraId(0);
-            integrator.setOrientationLocked(false);
-            integrator.setBeepEnabled(false);
-            integrator.setBarcodeImageEnabled(false);
-            integrator.setCaptureActivity(CaptureActivityAllOrientations.class);
-            integrator.initiateScan();
-        });
+        scanBtn.setOnClickListener(v -> startQrCodeScanner());
 
         Button checkBtn = findViewById(R.id.validateCodeButton);
         checkBtn.setOnClickListener(v -> {
@@ -124,35 +101,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (result.getContents() == null) {
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
-            } else {
-                TextView codeField = findViewById(R.id.codeText);
-                codeField.setText(result.getContents());
-                validateCode(result.getContents());
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-            Toast.makeText(this, "Scan failed", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void validateCode(String code) {
-        if (code.length() != 6 || !code.matches("[0-9]+")) {
-            new AlertDialog.Builder(this)
-                    .setMessage("Invalid code. Try again")
-                    .setPositiveButton("Ok", null)
-                    .show();
-            return;
-        }
-        Toast.makeText(this, "Validating...", Toast.LENGTH_LONG).show();
-    }
-
-    private void initDeviceSearch() {
+    private void initBluetooth() {
         BluetoothManager btManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         if (btManager == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
@@ -166,19 +115,23 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 this::handlePermissionResult);
 
-        List<String> reqPermissions = new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            reqPermissions.add(Manifest.permission.BLUETOOTH_SCAN);
-            reqPermissions.add(Manifest.permission.BLUETOOTH_CONNECT);
-        } else {
-            reqPermissions.add(Manifest.permission.BLUETOOTH);
-            reqPermissions.add(Manifest.permission.BLUETOOTH_ADMIN);
-        }
-
         List<String> permissions = new ArrayList<>();
-        for (String permission : reqPermissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(permission);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH_SCAN);
+            }
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+            }
+        } else {
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH);
+            }
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             }
         }
 
@@ -190,38 +143,63 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startBluetoothDiscovery() {
-        if (btAdapter == null || !btAdapter.isEnabled()) {
+        if (btAdapter == null) {
+            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!btAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
+            enableBtLauncher.launch(enableBtIntent);
             return;
         }
 
         devicesContainer.removeAllViews();
         foundDevices.clear();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return;
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(receiver, filter);
 
-        for (BluetoothDevice device : btAdapter.getBondedDevices()) {
-            if (device.getName() != null) {
-                String deviceInfo = device.getName() + "\n" + device.getAddress();
-                if (!foundDevices.contains(deviceInfo)) {
-                    foundDevices.add(deviceInfo);
-                    TextView deviceView = new TextView(MainActivity.this);
-                    deviceView.setText(deviceInfo);
-                    deviceView.setPadding(32, 16, 32, 16);
-                    devicesContainer.addView(deviceView);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            for (BluetoothDevice device : btAdapter.getBondedDevices()) {
+                if (device.getName() != null) {
+                    String deviceInfo = device.getName() + "\n" + device.getAddress();
+                    if (!foundDevices.contains(deviceInfo)) {
+                        foundDevices.add(deviceInfo);
+                        addDeviceToView(deviceInfo);
+                    }
                 }
             }
         }
 
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
-        isReceiverRegistered = true;
-
+        isScanning = true;
         btAdapter.startDiscovery();
+    }
 
-        scanHandler.removeCallbacks(scanRunnable);
-        scanHandler.post(scanRunnable);
+    private void stopBluetoothDiscovery() {
+        isScanning = false;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED)
+            showRejectMessage();
+
+        if (btAdapter != null && btAdapter.isDiscovering()) {
+            btAdapter.cancelDiscovery();
+        }
+        try {
+            unregisterReceiver(receiver);
+        } catch (Exception e) {
+            Log.e(TAG, "Error unregistering receiver", e);
+        }
+    }
+
+    private void addDeviceToView(String deviceInfo) {
+        runOnUiThread(() -> {
+            TextView deviceView = new TextView(MainActivity.this);
+            deviceView.setText(deviceInfo);
+            deviceView.setPadding(32, 16, 32, 16);
+            devicesContainer.addView(deviceView);
+        });
     }
 
     private void handlePermissionResult(Map<String, Boolean> permissions) {
@@ -236,65 +214,75 @@ public class MainActivity extends AppCompatActivity {
         if (allGranted) {
             startBluetoothDiscovery();
         } else {
-            Toast.makeText(this, "Permissions denied, cannot use Bluetooth", Toast.LENGTH_LONG).show();
+            showRejectMessage();
         }
+    }
+
+    private void startQrCodeScanner() {
+        var integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        integrator.setPrompt("Scan the QR code shown on the device");
+        integrator.setCameraId(0);
+        integrator.setOrientationLocked(false);
+        integrator.setBeepEnabled(false);
+        integrator.setBarcodeImageEnabled(false);
+        integrator.setCaptureActivity(CaptureActivityAllOrientations.class);
+        integrator.initiateScan();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() == null) {
+                Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
+            } else {
+                TextView codeField = findViewById(R.id.codeText);
+                codeField.setText(result.getContents());
+                validateCode(result.getContents());
+            }
+        }
+    }
+
+    private void validateCode(String code) {
+        if (code.length() != 6 || !code.matches("[0-9]+")) {
+            new AlertDialog.Builder(this)
+                    .setMessage("Invalid code. It should be 6 digits.")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
+        Toast.makeText(this, "Validating code...", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(btStateReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED)
+            showRejectMessage();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        if (btAdapter != null && btAdapter.isDiscovering()) {
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(receiver, filter);
-            isReceiverRegistered = true;
+        if (isScanning && btAdapter != null && !btAdapter.isDiscovering()) {
+            btAdapter.startDiscovery();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        scanHandler.removeCallbacks(scanRunnable);
-
-        try {
-            unregisterReceiver(btStateReceiver);
-        } catch (Exception e) {
-            Log.e(TAG, "Error unregistering btStateReceiver", e);
-        }
-
-        if (isReceiverRegistered) {
-            try {
-                unregisterReceiver(receiver);
-                isReceiverRegistered = false;
-            } catch (Exception e) {
-                Log.e(TAG, "Error unregistering receiver", e);
-            }
-        }
+        stopBluetoothDiscovery();
+        scanHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        scanHandler.removeCallbacks(scanRunnable);
+        stopBluetoothDiscovery();
+        scanHandler.removeCallbacksAndMessages(null);
+    }
 
-        try {
-            unregisterReceiver(btStateReceiver);
-        } catch (Exception e) {
-            Log.e(TAG, "Error unregistering btStateReceiver", e);
-        }
-
-        if (isReceiverRegistered) {
-            try {
-                unregisterReceiver(receiver);
-                isReceiverRegistered = false;
-            } catch (Exception e) {
-                Log.e(TAG, "Error unregistering receiver", e);
-            }
-        }
+    private void showRejectMessage() {
+        Toast.makeText(this, "Nearby devices permission denied." +
+                " Enable when prompted", Toast.LENGTH_LONG).show();
     }
 }
