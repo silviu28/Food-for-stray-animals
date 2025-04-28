@@ -9,13 +9,13 @@ import java.io.OutputStream;
 public class Device {
     private boolean engineOn = false;
     private boolean tipperReleased = false;
-    private double speed = 0.0;
-    private float steeringAngle = 0.0f;
+    private int speed = 0;
+    private int steeringAngle = 0;
     private boolean emergencyLightsOn = false;
     private boolean brakesOn = false;
     private boolean headLightsOn = false;
     private String address;
-    private boolean[] directions = new boolean[4];
+//    private boolean[] directions = new boolean[4];
 
     private final int HEADLIGHTS = 3001;
     private final int BRAKES = 3002;
@@ -26,6 +26,8 @@ public class Device {
     private final int TIPPER_SERVO = 3007;
     private final int MOTOR = 3008;
     private final int STEERING_RESET = 3009;
+    private final int MOTOR_BASE = 1125;
+    private final int STEERING_BASE = 2000;
 
     private BluetoothSocket socket;
     private OutputStream outputStream;
@@ -80,51 +82,55 @@ public class Device {
         return address;
     }
 
-    public boolean getDirection(Direction direction) {
-        switch (direction) {
-            case UP:
-                return directions[0];
-            case DOWN:
-                return directions[1];
-            case LEFT:
-                return directions[2];
-            case RIGHT:
-                return directions[3];
-            default:
-                throw new IllegalArgumentException("Invalid direction");
-        }
-    }
+//    public boolean getDirection(Direction direction) {
+//        switch (direction) {
+//            case UP:
+//                return directions[0];
+//            case DOWN:
+//                return directions[1];
+//            case LEFT:
+//                return directions[2];
+//            case RIGHT:
+//                return directions[3];
+//            default:
+//                throw new IllegalArgumentException("Invalid direction");
+//        }
+//    }
 
-    public void setSpeed(double speed) {
+    public void setSpeed(int speed) {
+        assert Math.abs(speed) <= 125;
         this.speed = speed;
+        sendCommand(MOTOR_BASE + speed);
     }
 
-    public void setSteeringAngle(float steeringAngle) {
+    public void setSteeringAngle(int steeringAngle) {
+        assert steeringAngle <= 180;
         this.steeringAngle = steeringAngle;
+        sendCommand(STEERING_BASE + steeringAngle);
     }
 
     public void setAddress(String address) {
         this.address = address;
     }
 
-    public void setDirection(Direction direction, boolean value) {
-        switch (direction) {
-            case UP:
-                directions[0] = value;
-                break;
-            case DOWN:
-                directions[1] = value;
-                break;
-            case LEFT:
-                directions[2] = value;
-                break;
-            case RIGHT:
-                directions[3] = value;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid direction");
-        }
-    }
+//    public void setDirection(Direction direction, boolean value) {
+//        switch (direction) {
+//            case UP:
+//                directions[0] = value;
+//                break;
+//            case DOWN:
+//                directions[1] = value;
+//                break;
+//            case LEFT:
+//                directions[2] = value;
+//                break;
+//            case RIGHT:
+//                directions[3] = value;
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid direction");
+//        }
+//    }
 
     public void toggleHeadlights() {
         headLightsOn = !headLightsOn;
@@ -158,10 +164,11 @@ public class Device {
     }
 
     public void toggleMotor() {
-        sendCommand(MOTOR);
+        sendCommand(MOTOR); // motor should halt
     }
 
     public void resetSteering() {
+        this.steeringAngle = 0;
         sendCommand(STEERING_RESET);
     }
 

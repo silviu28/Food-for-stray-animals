@@ -54,11 +54,11 @@ public class ControllerActivity extends AppCompatActivity {
         Button rgtBtn = this.findViewById(R.id.buttonRight);
         Button cntBtn = this.findViewById(R.id.buttonCenter);
 
-        upBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.UP, true));
-        dwnBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.DOWN, true));
-        lftBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.LEFT, true));
-        rgtBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.RIGHT, true));
-        cntBtn.setOnClickListener(v -> { /* ??? */});
+//        upBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.UP, true));
+//        dwnBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.DOWN, true));
+//        lftBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.LEFT, true));
+//        rgtBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.RIGHT, true));
+//        cntBtn.setOnClickListener(v -> { /* ??? */});
     }
 
     private void addLightListeners() {
@@ -82,7 +82,7 @@ public class ControllerActivity extends AppCompatActivity {
         steerBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                connectedDevice.setSteeringAngle((float) steerBar.getProgress());
+                connectedDevice.setSteeringAngle(steerBar.getProgress());
                 TextView steerText = findViewById(R.id.steeringText);
                 steerText.setText("Steering: " + steerBar.getProgress() + "°");
             }
