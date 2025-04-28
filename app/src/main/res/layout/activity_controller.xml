@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView5"
+        android:id="@+id/deviceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Not Connected"
@@ -31,7 +31,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Select Bluetooth device"
-        app:layout_constraintTop_toBottomOf="@+id/textView5"
+        app:layout_constraintTop_toBottomOf="@+id/deviceLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
@@ -79,115 +79,80 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp">
 
-        <Button
-            android:id="@+id/buttonUp"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="↑"
+        <com.example.fooddispensercontroller.Joystick
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:id="@+id/joystick"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
-            android:id="@+id/buttonCenter"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="O"
-            app:layout_constraintTop_toBottomOf="@id/buttonUp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:id="@+id/engineText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Engine: 0 km/h"
+                app:layout_constraintTop_toBottomOf="@+id/remoteLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="32dp" />
 
-        <Button
-            android:id="@+id/buttonDown"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="↓"
-            app:layout_constraintTop_toBottomOf="@id/buttonCenter"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <Button
+                android:id="@+id/ioEngineButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I/O"
+                app:layout_constraintTop_toTopOf="@+id/engineText"
+                app:layout_constraintStart_toEndOf="@+id/engineText"
+                android:layout_marginStart="16dp" />
 
-        <Button
-            android:id="@+id/buttonLeft"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="←"
-            app:layout_constraintEnd_toStartOf="@id/buttonCenter"
-            app:layout_constraintTop_toTopOf="@id/buttonCenter"
-            app:layout_constraintBottom_toBottomOf="@id/buttonCenter" />
+            <SeekBar
+                android:id="@+id/engineSpeedBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:max="10"
+                android:progress="3"
+                app:layout_constraintTop_toBottomOf="@+id/engineText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
 
-        <Button
-            android:id="@+id/buttonRight"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:text="→"
-            app:layout_constraintStart_toEndOf="@id/buttonCenter"
-            app:layout_constraintTop_toTopOf="@id/buttonCenter"
-            app:layout_constraintBottom_toBottomOf="@id/buttonCenter" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/steeringText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Steering: 0°"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/engineSpeedBar" />
 
-    <TextView
-        android:id="@+id/engineText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Engine: 0 km/h"
-        app:layout_constraintTop_toBottomOf="@+id/remoteLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="32dp" />
+            <Button
+                android:id="@+id/button24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I/O"
+                app:layout_constraintTop_toTopOf="@+id/steeringText"
+                app:layout_constraintStart_toEndOf="@+id/steeringText"
+                android:layout_marginStart="16dp" />
 
-    <Button
-        android:id="@+id/ioEngineButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="I/O"
-        app:layout_constraintTop_toTopOf="@+id/engineText"
-        app:layout_constraintStart_toEndOf="@+id/engineText"
-        android:layout_marginStart="16dp" />
+            <SeekBar
+                android:id="@+id/steeringAngleBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/steeringText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
-    <SeekBar
-        android:id="@+id/engineSpeedBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:max="10"
-        android:progress="3"
-        app:layout_constraintTop_toBottomOf="@+id/engineText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+            <Button
+                android:id="@+id/tipperButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Basculanta"
+                app:layout_constraintTop_toBottomOf="@+id/steeringAngleBar"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="28dp" />
 
-    <TextView
-        android:id="@+id/steeringText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Steering: 0°"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/engineSpeedBar" />
 
-    <Button
-        android:id="@+id/button24"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="I/O"
-        app:layout_constraintTop_toTopOf="@+id/steeringText"
-        app:layout_constraintStart_toEndOf="@+id/steeringText"
-        android:layout_marginStart="16dp" />
 
-    <SeekBar
-        android:id="@+id/steeringAngleBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/steeringText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
-
-    <Button
-        android:id="@+id/tipperButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Basculanta"
-        app:layout_constraintTop_toBottomOf="@+id/steeringAngleBar"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="28dp" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>

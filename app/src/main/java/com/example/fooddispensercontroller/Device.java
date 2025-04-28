@@ -15,6 +15,7 @@ public class Device {
     private boolean brakesOn = false;
     private boolean headLightsOn = false;
     private String address;
+    private boolean movingForward = true;
 //    private boolean[] directions = new boolean[4];
 
     private final int HEADLIGHTS = 3001;
@@ -97,6 +98,10 @@ public class Device {
 //        }
 //    }
 
+    public boolean getMovingForward() {
+        return movingForward;
+    }
+
     public void setSpeed(int speed) {
         assert Math.abs(speed) <= 125;
         this.speed = speed;
@@ -111,6 +116,10 @@ public class Device {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public void setMovingForward(boolean movingForward) {
+        this.movingForward = movingForward;
     }
 
 //    public void setDirection(Direction direction, boolean value) {

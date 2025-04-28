@@ -1,8 +1,11 @@
 package com.example.fooddispensercontroller;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -48,17 +51,26 @@ public class ControllerActivity extends AppCompatActivity {
     }
 
     private void addDirectionListeners() {
-        Button upBtn = this.findViewById(R.id.buttonUp);
-        Button dwnBtn = this.findViewById(R.id.buttonDown);
-        Button lftBtn = this.findViewById(R.id.buttonLeft);
-        Button rgtBtn = this.findViewById(R.id.buttonRight);
-        Button cntBtn = this.findViewById(R.id.buttonCenter);
-
-//        upBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.UP, true));
-//        dwnBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.DOWN, true));
-//        lftBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.LEFT, true));
-//        rgtBtn.setOnClickListener(v -> this.connectedDevice.setDirection(Direction.RIGHT, true));
-//        cntBtn.setOnClickListener(v -> { /* ??? */});
+        Joystick joystick = this.findViewById(R.id.joystick);
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(80);
+                    if (connectedDevice.getSteeringAngle() == joystick.getSteeringAngle())
+                        continue;
+                    else {
+                        connectedDevice.setSteeringAngle(joystick.getSteeringAngle());
+                        runOnUiThread(() -> {
+                            TextView steerText = findViewById(R.id.steeringText);
+                            steerText.setText("Steering: " + joystick.getSteeringAngle() + "°");
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    Log.e("ControllerActivity", "Joystick polling error", e);
+                    return;
+                }
+            }
+        }).start();
     }
 
     private void addLightListeners() {
@@ -119,15 +131,24 @@ public class ControllerActivity extends AppCompatActivity {
                 while (true) {
                     if (this.connectedDevice.getAddress() != null) {
                         Thread.sleep(1000);
+                        runOnUiThread(() -> {
+                            TextView deviceLabel = findViewById(R.id.deviceLabel);
+                            deviceLabel.setText(this.connectedDevice.getAddress());
+                        });
                     }
                     else {
-                        runOnUiThread(() ->
-                        Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> {
+                            TextView deviceLabel = findViewById(R.id.deviceLabel);
+                            deviceLabel.setText("Not Connected");
+                            deviceLabel.setTextColor(Color.RED);
+                        Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show();
+                        });
+
                         break;
                     }
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Log.e("ControllerActivity", "Device polling error", e);
             }
         }).start();
     }
