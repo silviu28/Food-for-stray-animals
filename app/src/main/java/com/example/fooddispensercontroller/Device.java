@@ -122,25 +122,6 @@ public class Device {
         this.movingForward = movingForward;
     }
 
-//    public void setDirection(Direction direction, boolean value) {
-//        switch (direction) {
-//            case UP:
-//                directions[0] = value;
-//                break;
-//            case DOWN:
-//                directions[1] = value;
-//                break;
-//            case LEFT:
-//                directions[2] = value;
-//                break;
-//            case RIGHT:
-//                directions[3] = value;
-//                break;
-//            default:
-//                throw new IllegalArgumentException("Invalid direction");
-//        }
-//    }
-
     public void toggleHeadlights() {
         headLightsOn = !headLightsOn;
         sendCommand(HEADLIGHTS);

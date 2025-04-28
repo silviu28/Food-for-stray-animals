@@ -44,33 +44,21 @@ public class ControllerActivity extends AppCompatActivity {
             }
         }
 
-        this.addDirectionListeners();
         this.addLightListeners();
         this.addSliderListeners();
         this.pollDevice();
-    }
 
-    private void addDirectionListeners() {
         Joystick joystick = this.findViewById(R.id.joystick);
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(80);
-                    if (connectedDevice.getSteeringAngle() == joystick.getSteeringAngle())
-                        continue;
-                    else {
-                        connectedDevice.setSteeringAngle(joystick.getSteeringAngle());
-                        runOnUiThread(() -> {
-                            TextView steerText = findViewById(R.id.steeringText);
-                            steerText.setText("Steering: " + joystick.getSteeringAngle() + "°");
-                        });
-                    }
-                } catch (InterruptedException e) {
-                    Log.e("ControllerActivity", "Joystick polling error", e);
-                    return;
-                }
-            }
-        }).start();
+        joystick.setControlledDevice(this.connectedDevice);
+//        joystick.setOnMoveListener((steering, forward) -> {
+//            TextView steerText = findViewById(R.id.steeringText);
+//            TextView directionText = findViewById(R.id.directionText);
+//
+//            runOnUiThread(() -> {
+//                steerText.setText(String.format("Steering %d", steering));
+//                directionText.setText(String.format("Direction %s", forward ? "Forward" : "Backward"));
+//            });
+//        });
     }
 
     private void addLightListeners() {

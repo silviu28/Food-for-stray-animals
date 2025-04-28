@@ -153,6 +153,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="28dp" />
 
+    <TextView
+        android:id="@+id/directionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/steeringAngleBar"
+        app:layout_constraintStart_toStartOf="parent"/>
+
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

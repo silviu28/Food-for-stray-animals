@@ -17,8 +17,11 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     private float baseRadius, hatRadius;
     private float touchX, touchY;
     private boolean isTouched = false;
-
     private Device controlledDevice;
+    public interface OnMoveListener {
+        void onMove(float steering, boolean forward);
+    }
+    private OnMoveListener listener;
 
     public Joystick(Context context) {
         super(context);
@@ -84,6 +87,9 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
             controlledDevice.setSteeringAngle(getSteeringAngle());
             controlledDevice.setMovingForward(isForward());
         }
+        if (listener != null) {
+            listener.onMove(getSteeringAngle(), isForward());
+        }
         return true;
     }
 
@@ -137,4 +143,9 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     public void setControlledDevice(Device device) {
         this.controlledDevice = device;
     }
+
+    public void setOnMoveListener(OnMoveListener listener) {
+        this.listener = listener;
+    }
+
 }
