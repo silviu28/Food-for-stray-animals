@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
+    android:layout_marginTop="50dp"
     tools:context=".MainActivity">
 
     <TextView
@@ -21,145 +21,150 @@
         android:id="@+id/deviceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Not Connected"
-        app:layout_constraintTop_toBottomOf="@id/textView6"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintTop_toBottomOf="@id/textView6" />
 
     <Button
-        android:id="@+id/button11"
+        android:id="@+id/selectDeviceButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Select Bluetooth device"
-        app:layout_constraintTop_toBottomOf="@+id/deviceLabel"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceLabel" />
+
+    <LinearLayout
+        android:id="@+id/mechanicalPartsGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lightControlGroup">
+
+        <ImageButton
+            android:id="@+id/engineButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/engine"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Motor I/O"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
+
+        <ImageButton
+            android:id="@+id/tipperButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/tipper"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Tipper I/O"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/lightControlGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/button11"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectDeviceButton">
 
-        <Button
-            android:id="@+id/emergencyButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Emergency" />
-
-        <Button
+        <ImageButton
             android:id="@+id/brakeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Brake" />
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/brakes"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Brakes"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/emergencyButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/hazardlights"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Emergency"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
+
+        <ImageButton
             android:id="@+id/headlightsButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Headlights" />
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/headlights"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Headlights"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
     </LinearLayout>
 
-    <!-- Remote-style controls -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/remoteLayout"
+
+    <com.example.fooddispensercontroller.Joystick
+        android:id="@+id/joystick"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mechanicalPartsGroup" />
+
+    <SeekBar
+        android:id="@+id/speedSlider"
+        android:layout_width="125pt"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintHorizontal_bias="0.5"
+        android:max="125"
+        android:min="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/joystick" />
+
+    <TextView
+        android:id="@+id/engineText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/lightControlGroup"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Engine: 0 km/h"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp">
+        app:layout_constraintTop_toBottomOf="@id/speedSlider" />
 
-        <com.example.fooddispensercontroller.Joystick
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:id="@+id/joystick"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/engineText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Engine: 0 km/h"
-                app:layout_constraintTop_toBottomOf="@+id/remoteLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginTop="32dp" />
-
-            <Button
-                android:id="@+id/ioEngineButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="I/O"
-                app:layout_constraintTop_toTopOf="@+id/engineText"
-                app:layout_constraintStart_toEndOf="@+id/engineText"
-                android:layout_marginStart="16dp" />
-
-            <SeekBar
-                android:id="@+id/engineSpeedBar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:max="10"
-                android:progress="3"
-                app:layout_constraintTop_toBottomOf="@+id/engineText"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="16dp" />
-
-            <TextView
-                android:id="@+id/steeringText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Steering: 0°"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/engineSpeedBar" />
-
-            <Button
-                android:id="@+id/button24"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="I/O"
-                app:layout_constraintTop_toTopOf="@+id/steeringText"
-                app:layout_constraintStart_toEndOf="@+id/steeringText"
-                android:layout_marginStart="16dp" />
-
-            <SeekBar
-                android:id="@+id/steeringAngleBar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/steeringText"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="8dp" />
-
-            <Button
-                android:id="@+id/tipperButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Basculanta"
-                app:layout_constraintTop_toBottomOf="@+id/steeringAngleBar"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginTop="28dp" />
+    <TextView
+        android:id="@+id/steeringText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Steering: 0°"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/engineText" />
 
     <TextView
         android:id="@+id/directionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/steeringAngleBar"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Direction: Forwards"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/steeringText" />
 
 
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

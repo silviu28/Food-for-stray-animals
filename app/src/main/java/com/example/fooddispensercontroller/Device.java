@@ -16,7 +16,6 @@ public class Device {
     private boolean headLightsOn = false;
     private String address;
     private boolean movingForward = true;
-//    private boolean[] directions = new boolean[4];
 
     private final int HEADLIGHTS = 3001;
     private final int BRAKES = 3002;
@@ -83,21 +82,6 @@ public class Device {
         return address;
     }
 
-//    public boolean getDirection(Direction direction) {
-//        switch (direction) {
-//            case UP:
-//                return directions[0];
-//            case DOWN:
-//                return directions[1];
-//            case LEFT:
-//                return directions[2];
-//            case RIGHT:
-//                return directions[3];
-//            default:
-//                throw new IllegalArgumentException("Invalid direction");
-//        }
-//    }
-
     public boolean getMovingForward() {
         return movingForward;
     }
@@ -153,7 +137,7 @@ public class Device {
         sendCommand(TIPPER_SERVO);
     }
 
-    public void toggleMotor() {
+    public void toggleEngine() {
         sendCommand(MOTOR); // motor should halt
     }
 

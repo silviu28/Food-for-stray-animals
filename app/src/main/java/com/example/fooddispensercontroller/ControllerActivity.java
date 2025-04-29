@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,65 +45,32 @@ public class ControllerActivity extends AppCompatActivity {
             }
         }
 
-        this.addLightListeners();
-        this.addSliderListeners();
+        this.addToggleListeners();
         this.pollDevice();
 
         Joystick joystick = this.findViewById(R.id.joystick);
         joystick.setControlledDevice(this.connectedDevice);
-//        joystick.setOnMoveListener((steering, forward) -> {
-//            TextView steerText = findViewById(R.id.steeringText);
-//            TextView directionText = findViewById(R.id.directionText);
-//
-//            runOnUiThread(() -> {
-//                steerText.setText(String.format("Steering %d", steering));
-//                directionText.setText(String.format("Direction %s", forward ? "Forward" : "Backward"));
-//            });
-//        });
-    }
+        joystick.setOnMoveListener((steering, backward) -> {
+            TextView steerText = findViewById(R.id.steeringText);
+            TextView directionText = findViewById(R.id.directionText);
 
-    private void addLightListeners() {
-        Button headLightsBtn = this.findViewById(R.id.headlightsButton);
-        Button engineBtn = this.findViewById(R.id.ioEngineButton);
-        Button brakeBtn = this.findViewById(R.id.brakeButton);
-        Button emergencyBtn = this.findViewById(R.id.emergencyButton);
-        Button tipperBtn = this.findViewById(R.id.tipperButton);
-
-        headLightsBtn.setOnClickListener(v -> this.connectedDevice.toggleHeadlights());
-        emergencyBtn.setOnClickListener(v -> this.connectedDevice.toggleEmergencyLights());
-        engineBtn.setOnClickListener(v -> this.connectedDevice.toggleMotor());
-        brakeBtn.setOnClickListener(v -> this.connectedDevice.toggleBrakes());
-        tipperBtn.setOnClickListener(v -> this.connectedDevice.toggleTipper());
-    }
-
-    private void addSliderListeners() {
-        SeekBar steerBar = this.findViewById(R.id.steeringAngleBar);
-        steerBar.setMin(-180);
-        steerBar.setMax(180);
-        steerBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                connectedDevice.setSteeringAngle(steerBar.getProgress());
-                TextView steerText = findViewById(R.id.steeringText);
-                steerText.setText("Steering: " + steerBar.getProgress() + "°");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            runOnUiThread(() -> {
+                steerText.setText("Steering: " + steering + "°");
+                directionText.setText("Direction: " + (backward ? "Backward" : "Forward"));
+            });
         });
-
-        SeekBar speedBar = this.findViewById(R.id.engineSpeedBar);
-        speedBar.setMin(0);
-        speedBar.setMax(10);
-        speedBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        SeekBar speedbar = this.findViewById(R.id.speedSlider);
+        speedbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                connectedDevice.setSpeed(speedBar.getProgress());
-                TextView speedText = findViewById(R.id.engineText);
-                speedText.setText("Engine: " + speedBar.getProgress() + " km/h");
+
+                runOnUiThread(() -> {
+                    TextView engineText = findViewById(R.id.engineText);
+                    engineText.setText("Engine: " + progress + " km/h");
+                });
+                if (connectedDevice != null) {
+                    connectedDevice.setSpeed(progress);
+                }
             }
 
             @Override
@@ -112,6 +80,52 @@ public class ControllerActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
+
+    private void addToggleListeners() {
+        ImageButton headLightsBtn = this.findViewById(R.id.headlightsButton);
+        ImageButton brakeBtn = this.findViewById(R.id.brakeButton);
+        ImageButton emergencyBtn = this.findViewById(R.id.emergencyButton);
+        ImageButton engineBtn = this.findViewById(R.id.engineButton);
+        ImageButton tipperBtn = this.findViewById(R.id.tipperButton);
+
+        headLightsBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleHeadlights();
+            runOnUiThread(() -> {
+                if (connectedDevice.getHeadLightsState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+        emergencyBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleEmergencyLights();
+            runOnUiThread(() -> {
+                if (connectedDevice.getEmergencyLightsState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+        brakeBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleBrakes();
+            runOnUiThread(() -> {
+                if (connectedDevice.getBrakesState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+        engineBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleEngine();
+            runOnUiThread(() -> {
+                if (connectedDevice.getEngineState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+    }
+
 
     private void pollDevice() {
         new Thread(() -> {
@@ -123,13 +137,12 @@ public class ControllerActivity extends AppCompatActivity {
                             TextView deviceLabel = findViewById(R.id.deviceLabel);
                             deviceLabel.setText(this.connectedDevice.getAddress());
                         });
-                    }
-                    else {
+                    } else {
                         runOnUiThread(() -> {
                             TextView deviceLabel = findViewById(R.id.deviceLabel);
                             deviceLabel.setText("Not Connected");
                             deviceLabel.setTextColor(Color.RED);
-                        Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Connection has been lost.", Toast.LENGTH_SHORT).show();
                         });
 
                         break;

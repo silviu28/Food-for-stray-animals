@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -26,18 +27,27 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     public Joystick(Context context) {
         super(context);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        setZOrderOnTop(true);
+        setFocusable(true);
         setFocusable(true);
     }
 
     public Joystick(Context context, AttributeSet attributes) {
         super(context, attributes);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        setZOrderOnTop(true);
+        setFocusable(true);
         setFocusable(true);
     }
 
     public Joystick(Context context, AttributeSet attributes, int style) {
         super(context, attributes, style);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        setZOrderOnTop(true);
+        setFocusable(true);
         setFocusable(true);
     }
 
