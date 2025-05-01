@@ -47,6 +47,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lightControlGroup">
 
+
+
         <ImageButton
             android:id="@+id/engineButton"
             android:layout_width="70dp"
@@ -82,6 +84,16 @@
         app:layout_constraintTop_toBottomOf="@id/selectDeviceButton">
 
         <ImageButton
+            android:id="@+id/leftSignalButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/left"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Signal left"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
+
+        <ImageButton
             android:id="@+id/brakeButton"
             android:layout_width="70dp"
             android:layout_height="60dp"
@@ -108,6 +120,18 @@
             android:src="@drawable/headlights"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Headlights"
+            android:scaleType="centerInside"
+            app:tint="#ff0000" />
+
+
+
+        <ImageButton
+            android:id="@+id/rightSignalButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/right"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Signal right"
             android:scaleType="centerInside"
             app:tint="#ff0000" />
     </LinearLayout>

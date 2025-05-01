@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,10 +30,10 @@ public class ControllerActivity extends AppCompatActivity {
 
         var adapter = BluetoothAdapter.getDefaultAdapter();
 
+        try {
         var deviceAddress = getIntent().getStringExtra("deviceAddress");
         if (deviceAddress != null) {
-            var device = adapter.getRemoteDevice(deviceAddress);
-            try {
+                var device = adapter.getRemoteDevice(deviceAddress);
                 var socket = device.createRfcommSocketToServiceRecord(
                         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
                 );
@@ -40,15 +41,24 @@ public class ControllerActivity extends AppCompatActivity {
                 socket.connect();
                 this.connectedDevice = new Device(socket);
                 Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
-            } catch (IOException e) {
+            }
+            } catch (IOException | NullPointerException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Error connecting to device", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(ControllerActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
                 });
+                return;
             }
-        }
+
+
+        Button reselectBtn = this.findViewById(R.id.selectDeviceButton);
+        reselectBtn.setOnClickListener(v -> runOnUiThread(() -> {
+            Intent intent = new Intent(ControllerActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }));
 
         this.addToggleListeners();
         this.configureJoystick();
@@ -61,6 +71,8 @@ public class ControllerActivity extends AppCompatActivity {
         ImageButton emergencyBtn = this.findViewById(R.id.emergencyButton);
         ImageButton engineBtn = this.findViewById(R.id.engineButton);
         ImageButton tipperBtn = this.findViewById(R.id.tipperButton);
+        ImageButton rightSignalBtn = this.findViewById(R.id.rightSignalButton);
+        ImageButton leftSignalBtn = this.findViewById(R.id.leftSignalButton);
 
         headLightsBtn.setOnClickListener(v -> {
             this.connectedDevice.toggleHeadlights();
@@ -71,6 +83,7 @@ public class ControllerActivity extends AppCompatActivity {
                     ((ImageButton) v).setColorFilter(Color.RED);
             });
         });
+
         emergencyBtn.setOnClickListener(v -> {
             this.connectedDevice.toggleEmergencyLights();
             runOnUiThread(() -> {
@@ -80,6 +93,7 @@ public class ControllerActivity extends AppCompatActivity {
                     ((ImageButton) v).setColorFilter(Color.RED);
             });
         });
+
         brakeBtn.setOnClickListener(v -> {
             this.connectedDevice.toggleBrakes();
             runOnUiThread(() -> {
@@ -89,6 +103,7 @@ public class ControllerActivity extends AppCompatActivity {
                     ((ImageButton) v).setColorFilter(Color.RED);
             });
         });
+
         engineBtn.setOnClickListener(v -> {
             this.connectedDevice.toggleEngine();
             runOnUiThread(() -> {
@@ -96,14 +111,35 @@ public class ControllerActivity extends AppCompatActivity {
                     ((ImageButton) v).setColorFilter(Color.GREEN);
                 else {
                     ((ImageButton) v).setColorFilter(Color.RED);
-                    ((SeekBar)findViewById(R.id.speedSlider)).setProgress(0);
+                    ((SeekBar) findViewById(R.id.speedSlider)).setProgress(0);
                 }
             });
         });
+
         tipperBtn.setOnClickListener(v -> {
             this.connectedDevice.toggleTipper();
             runOnUiThread(() -> {
                 if (connectedDevice.getTipperState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+
+        rightSignalBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleRightSignal();
+            runOnUiThread(() -> {
+                if (connectedDevice.getRightSignalState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+
+        leftSignalBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleLeftSignal();
+            runOnUiThread(() -> {
+                if (connectedDevice.getLeftSignalState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
                 else
                     ((ImageButton) v).setColorFilter(Color.RED);
@@ -138,10 +174,12 @@ public class ControllerActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
     }
 

@@ -16,6 +16,8 @@ public class Device {
     private boolean headLightsOn = false;
     private String address;
     private boolean movingForward = true;
+    private boolean rightSignalOn = false;
+    private boolean leftSignalOn = false;
 
     private final int HEADLIGHTS = 3001;
     private final int BRAKES = 3002;
@@ -81,10 +83,6 @@ public class Device {
         return address;
     }
 
-    public boolean getMovingDirection() {
-        return movingForward;
-    }
-
     public void setSpeed(int speed) {
         assert Math.abs(speed) <= 125;
         this.speed = speed;
@@ -112,14 +110,6 @@ public class Device {
         sendCommand(EMERGENCY_LIGHTS);
     }
 
-    public void toggleLeftIndicator() {
-        sendCommand(LEFT_INDICATOR);
-    }
-
-    public void toggleRightIndicator() {
-        sendCommand(RIGHT_INDICATOR);
-    }
-
     public void toggleReverse() {
         movingForward = !movingForward;
         sendCommand(REVERSE);
@@ -143,6 +133,24 @@ public class Device {
 
     public boolean getForwardState() {
         return movingForward;
+    }
+
+    public void toggleRightSignal() {
+        rightSignalOn = !rightSignalOn;
+        sendCommand(RIGHT_INDICATOR);
+    }
+
+    public void toggleLeftSignal() {
+        leftSignalOn = !leftSignalOn;
+        sendCommand(LEFT_INDICATOR);
+    }
+
+    public boolean getRightSignalState() {
+        return rightSignalOn;
+    }
+
+    public boolean getLeftSignalState() {
+        return leftSignalOn;
     }
 
 }
