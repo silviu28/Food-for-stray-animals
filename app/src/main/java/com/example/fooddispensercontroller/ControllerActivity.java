@@ -1,12 +1,10 @@
 package com.example.fooddispensercontroller;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -40,45 +38,15 @@ public class ControllerActivity extends AppCompatActivity {
                 adapter.cancelDiscovery();
                 socket.connect();
                 this.connectedDevice = new Device(socket);
+                Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show();
             }
         }
 
         this.addToggleListeners();
+        this.configureJoystick();
         this.pollDevice();
-
-        Joystick joystick = this.findViewById(R.id.joystick);
-        joystick.setControlledDevice(this.connectedDevice);
-        joystick.setOnMoveListener((steering, backward) -> {
-            TextView steerText = findViewById(R.id.steeringText);
-            TextView directionText = findViewById(R.id.directionText);
-
-            runOnUiThread(() -> {
-                steerText.setText("Steering: " + steering + "°");
-                directionText.setText("Direction: " + (backward ? "Backward" : "Forward"));
-            });
-        });
-        SeekBar speedbar = this.findViewById(R.id.speedSlider);
-        speedbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-                runOnUiThread(() -> {
-                    TextView engineText = findViewById(R.id.engineText);
-                    engineText.setText("Engine: " + progress + " km/h");
-                });
-                if (connectedDevice != null) {
-                    connectedDevice.setSpeed(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
     }
 
     private void addToggleListeners() {
@@ -123,6 +91,49 @@ public class ControllerActivity extends AppCompatActivity {
                 else
                     ((ImageButton) v).setColorFilter(Color.RED);
             });
+        });
+        tipperBtn.setOnClickListener(v -> {
+            this.connectedDevice.toggleTipper();
+            runOnUiThread(() -> {
+                if (connectedDevice.getTipperState())
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+                else
+                    ((ImageButton) v).setColorFilter(Color.RED);
+            });
+        });
+    }
+
+    private void configureJoystick() {
+        Joystick joystick = this.findViewById(R.id.joystick);
+        joystick.setControlledDevice(this.connectedDevice);
+        joystick.setOnMoveListener((steering, backward) -> {
+            TextView steerText = findViewById(R.id.steeringText);
+            TextView directionText = findViewById(R.id.directionText);
+
+            runOnUiThread(() -> {
+                steerText.setText("Steering: " + steering + "°");
+                directionText.setText("Direction: " + (backward ? "Backward" : "Forward"));
+            });
+        });
+        SeekBar speedbar = this.findViewById(R.id.speedSlider);
+        speedbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                runOnUiThread(() -> {
+                    TextView engineText = findViewById(R.id.engineText);
+                    engineText.setText("Engine: " + progress + " km/h");
+                });
+                if (connectedDevice != null) {
+                    connectedDevice.setSpeed(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 

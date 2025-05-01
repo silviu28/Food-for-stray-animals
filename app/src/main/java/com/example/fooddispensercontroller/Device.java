@@ -10,7 +10,7 @@ public class Device {
     private boolean engineOn = false;
     private boolean tipperReleased = false;
     private int speed = 0;
-    private int steeringAngle = 0;
+    private int steeringAngle = 90;
     private boolean emergencyLightsOn = false;
     private boolean brakesOn = false;
     private boolean headLightsOn = false;
@@ -32,7 +32,6 @@ public class Device {
     private BluetoothSocket socket;
     private OutputStream outputStream;
 
-    public Device() { /* empty, for debug */ }
     public Device(BluetoothSocket socket) throws IOException {
         this.socket = socket;
         this.outputStream = socket.getOutputStream();
@@ -58,11 +57,11 @@ public class Device {
         return tipperReleased;
     }
 
-    public double getSpeed() {
+    public int getSpeed() {
         return speed;
     }
 
-    public float getSteeringAngle() {
+    public int getSteeringAngle() {
         return steeringAngle;
     }
 
@@ -82,7 +81,7 @@ public class Device {
         return address;
     }
 
-    public boolean getMovingForward() {
+    public boolean getMovingDirection() {
         return movingForward;
     }
 
@@ -96,14 +95,6 @@ public class Device {
         assert steeringAngle <= 180;
         this.steeringAngle = steeringAngle;
         sendCommand(STEERING_BASE + steeringAngle);
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public void setMovingForward(boolean movingForward) {
-        this.movingForward = movingForward;
     }
 
     public void toggleHeadlights() {
@@ -130,20 +121,27 @@ public class Device {
     }
 
     public void toggleReverse() {
+        movingForward = !movingForward;
         sendCommand(REVERSE);
     }
 
     public void toggleTipper() {
+        tipperReleased = !tipperReleased;
         sendCommand(TIPPER_SERVO);
     }
 
     public void toggleEngine() {
-        sendCommand(MOTOR); // motor should halt
+        engineOn = !engineOn;
+        sendCommand(MOTOR);
     }
 
     public void resetSteering() {
-        this.steeringAngle = 0;
+        this.steeringAngle = 90;
         sendCommand(STEERING_RESET);
+    }
+
+    public boolean getForwardState() {
+        return movingForward;
     }
 
 }

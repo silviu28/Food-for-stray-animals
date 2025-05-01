@@ -20,7 +20,7 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     private boolean isTouched = false;
     private Device controlledDevice;
     public interface OnMoveListener {
-        void onMove(float steering, boolean forward);
+        void onMove(float steering, boolean isBackward);
     }
     private OnMoveListener listener;
 
@@ -56,7 +56,7 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
         centerX = (float) getWidth() / 2;
         centerY = (float) getHeight() / 2;
         baseRadius = (float) Math.min(getWidth(), getHeight()) / 3;
-        hatRadius = (float) Math.min(getWidth(), getHeight()) / 5;
+        hatRadius = (float) Math.min(getWidth(), getHeight()) / 6;
         touchX = centerX;
         touchY = centerY;
         drawJoystick(centerX, centerY);
@@ -95,11 +95,13 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
         }
         if (controlledDevice != null) {
             controlledDevice.setSteeringAngle(getSteeringAngle());
-            controlledDevice.setMovingForward(isForward());
+            if (controlledDevice.getForwardState() != isForward())
+                controlledDevice.toggleReverse();
         }
         if (listener != null) {
             listener.onMove(getSteeringAngle(), isForward());
         }
+        performClick();
         return true;
     }
 
@@ -139,15 +141,11 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public int getSteeringAngle() {
-        return (int)(getNormalizedX() * 90);
+        return (int)((-getNormalizedX() + 1) * 90);
     }
 
     public boolean isForward() {
         return getNormalizedY() > 0;
-    }
-
-    public boolean isBackward() {
-        return getNormalizedY() < 0;
     }
 
     public void setControlledDevice(Device device) {

@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private final Handler scanHandler = new Handler();
     private boolean isScanning = false;
 
-    // Bluetooth enable request launcher
     private final ActivityResultLauncher<Intent> enableBtLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -158,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
             for (BluetoothDevice device : btAdapter.getBondedDevices()) {
                 if (device.getName() != null) {
-                    String deviceInfo = device.getName() + "\n" + device.getAddress();
                     if (!foundDevices.contains(device)) {
                         foundDevices.add(device);
                         addDeviceToView(device);
@@ -250,12 +248,5 @@ public class MainActivity extends AppCompatActivity {
             showRejectMessage();
 
         Toast.makeText(this, "Connecting to " + device.getName() + "...", Toast.LENGTH_SHORT).show();
-
-        runOnUiThread(() -> {
-            Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, ControllerActivity.class);
-            intent.putExtra("deviceAddress", deviceAddress);
-            startActivity(intent);
-        });
     }
 }
