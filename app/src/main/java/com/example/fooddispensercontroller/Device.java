@@ -132,6 +132,7 @@ public class Device {
 
     public void toggleEngine() {
         engineOn = !engineOn;
+        if (!engineOn) speed = 0;
         sendCommand(MOTOR);
     }
 

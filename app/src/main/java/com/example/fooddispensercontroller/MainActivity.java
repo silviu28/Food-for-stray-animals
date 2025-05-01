@@ -242,11 +242,15 @@ public class MainActivity extends AppCompatActivity {
                 " Enable when prompted", Toast.LENGTH_LONG).show();
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private void connect(String deviceAddress) {
         var device = btAdapter.getRemoteDevice(deviceAddress);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
-            showRejectMessage();
-
-        Toast.makeText(this, "Connecting to " + device.getName() + "...", Toast.LENGTH_SHORT).show();
+        runOnUiThread(() -> {
+            Toast.makeText(this, "Connecting to " + device.getName(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, ControllerActivity.class);
+            intent.putExtra("deviceAddress", deviceAddress);
+            startActivity(intent);
+            finish();
+        });
     }
 }

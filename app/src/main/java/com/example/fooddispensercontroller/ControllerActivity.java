@@ -2,6 +2,7 @@ package com.example.fooddispensercontroller;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,7 +41,12 @@ public class ControllerActivity extends AppCompatActivity {
                 this.connectedDevice = new Device(socket);
                 Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
-                Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Error connecting to device", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(ControllerActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                });
             }
         }
 
@@ -88,8 +94,10 @@ public class ControllerActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (connectedDevice.getEngineState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
-                else
+                else {
                     ((ImageButton) v).setColorFilter(Color.RED);
+                    ((SeekBar)findViewById(R.id.speedSlider)).setProgress(0);
+                }
             });
         });
         tipperBtn.setOnClickListener(v -> {
