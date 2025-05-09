@@ -89,12 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
         devicesContainer = findViewById(R.id.devicesContainer);
         initBluetooth();
-
-        Button skipBtn = findViewById(R.id.button3);
-        skipBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ControllerActivity.class);
-            startActivity(intent);
-        });
     }
 
     private void initBluetooth() {

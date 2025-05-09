@@ -34,8 +34,8 @@ public class ControllerActivity extends AppCompatActivity {
         var adapter = BluetoothAdapter.getDefaultAdapter();
 
         try {
-        var deviceAddress = getIntent().getStringExtra("deviceAddress");
-        if (deviceAddress != null) {
+            var deviceAddress = getIntent().getStringExtra("deviceAddress");
+            if (deviceAddress != null) {
                 var device = adapter.getRemoteDevice(deviceAddress);
                 var socket = device.createRfcommSocketToServiceRecord(
                         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -45,15 +45,15 @@ public class ControllerActivity extends AppCompatActivity {
                 this.connectedDevice = new Device(socket);
                 Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
             }
-            } catch (IOException | NullPointerException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Error connecting to device", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(ControllerActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                });
-                return;
-            }
+        } catch (IOException | NullPointerException e) {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Error connecting to device", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ControllerActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            });
+            return;
+        }
 
 
         Button reselectBtn = this.findViewById(R.id.selectDeviceButton);
@@ -76,19 +76,30 @@ public class ControllerActivity extends AppCompatActivity {
         ImageButton tipperBtn = this.findViewById(R.id.tipperButton);
         ImageButton rightSignalBtn = this.findViewById(R.id.rightSignalButton);
         ImageButton leftSignalBtn = this.findViewById(R.id.leftSignalButton);
+        ImageButton photoresistorBtn = this.findViewById(R.id.photoresistorButton);
+
+        engineBtn.setColorFilter(Color.GREEN);
+        photoresistorBtn.setColorFilter(Color.GREEN);
 
         headLightsBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleHeadlights();
+            connectedDevice.toggleHeadlights();
+
             runOnUiThread(() -> {
-                if (connectedDevice.getHeadLightsState())
+                if (connectedDevice.getHeadLightsState()) {
                     ((ImageButton) v).setColorFilter(Color.GREEN);
-                else
+
+                    if (connectedDevice.getPhotoresistorState()) {
+                        connectedDevice.togglePhotoresistor();
+                        photoresistorBtn.setColorFilter(Color.RED);
+                    }
+                } else {
                     ((ImageButton) v).setColorFilter(Color.RED);
+                }
             });
         });
 
         emergencyBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleEmergencyLights();
+            connectedDevice.toggleHazardLights();
             runOnUiThread(() -> {
                 if (connectedDevice.getEmergencyLightsState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
@@ -98,7 +109,7 @@ public class ControllerActivity extends AppCompatActivity {
         });
 
         brakeBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleBrakes();
+            connectedDevice.toggleBrakes();
             runOnUiThread(() -> {
                 if (connectedDevice.getBrakesState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
@@ -108,19 +119,19 @@ public class ControllerActivity extends AppCompatActivity {
         });
 
         engineBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleEngine();
+            connectedDevice.toggleEngine();
             runOnUiThread(() -> {
-                if (connectedDevice.getEngineState())
+                if (connectedDevice.getEngineState()) {
                     ((ImageButton) v).setColorFilter(Color.GREEN);
-                else {
+                } else {
                     ((ImageButton) v).setColorFilter(Color.RED);
-                    ((SeekBar) findViewById(R.id.speedSlider)).setProgress(0);
+                    ((SeekBar) findViewById(R.id.speedSlider)).setProgress(125);
                 }
             });
         });
 
         tipperBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleTipper();
+            connectedDevice.toggleTipper();
             runOnUiThread(() -> {
                 if (connectedDevice.getTipperState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
@@ -130,7 +141,7 @@ public class ControllerActivity extends AppCompatActivity {
         });
 
         rightSignalBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleRightSignal();
+            connectedDevice.toggleRightSignal();
             runOnUiThread(() -> {
                 if (connectedDevice.getRightSignalState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
@@ -140,7 +151,7 @@ public class ControllerActivity extends AppCompatActivity {
         });
 
         leftSignalBtn.setOnClickListener(v -> {
-            this.connectedDevice.toggleLeftSignal();
+            connectedDevice.toggleLeftSignal();
             runOnUiThread(() -> {
                 if (connectedDevice.getLeftSignalState())
                     ((ImageButton) v).setColorFilter(Color.GREEN);
@@ -148,41 +159,61 @@ public class ControllerActivity extends AppCompatActivity {
                     ((ImageButton) v).setColorFilter(Color.RED);
             });
         });
+
+        photoresistorBtn.setOnClickListener(v -> {
+            connectedDevice.togglePhotoresistor();
+
+            runOnUiThread(() -> {
+                if (connectedDevice.getPhotoresistorState()) {
+                    ((ImageButton) v).setColorFilter(Color.GREEN);
+
+                    if (connectedDevice.getHeadLightsState()) {
+                        connectedDevice.toggleHeadlights();
+                        headLightsBtn.setColorFilter(Color.RED);
+                    }
+                } else {
+                    ((ImageButton) v).setColorFilter(Color.RED);
+                }
+            });
+        });
     }
 
     private void configureJoystick() {
         Joystick joystick = this.findViewById(R.id.joystick);
         joystick.setControlledDevice(this.connectedDevice);
-        joystick.setOnMoveListener((steering, backward) -> {
-            TextView steerText = findViewById(R.id.steeringText);
-            TextView directionText = findViewById(R.id.directionText);
-
+        joystick.setOnMoveListener(steering ->
             runOnUiThread(() -> {
+                TextView steerText = findViewById(R.id.steeringText);
                 steerText.setText("Steering: " + steering + "°");
-                directionText.setText("Direction: " + (backward ? "Backward" : "Forward"));
-            });
-        });
+            })
+        );
         SeekBar speedbar = this.findViewById(R.id.speedSlider);
+        speedbar.setMax(250);
+        speedbar.setProgress(125);
         speedbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                joystick.onSpeedChanged(progress);
 
                 runOnUiThread(() -> {
                     TextView engineText = findViewById(R.id.engineText);
-                    engineText.setText("Engine: " + progress + " km/h");
+                    TextView directionText = findViewById(R.id.directionText);
+
+                    if (progress > 125) {
+                        engineText.setText("Engine: " + (progress - 125) + " km/h");
+                        directionText.setText("Direction: Forward");
+                    } else if (progress < 125) {
+                        engineText.setText("Engine: " + (125 - progress) + " km/h");
+                        directionText.setText("Direction: Backward");
+                    } else {
+                        engineText.setText("Engine: 0 km/h");
+                        directionText.setText("Direction: Forward");
+                    }
                 });
-                if (connectedDevice != null) {
-                    connectedDevice.setSpeed(progress);
-                }
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 

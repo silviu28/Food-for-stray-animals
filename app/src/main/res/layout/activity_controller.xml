@@ -69,6 +69,16 @@
             android:scaleType="centerInside"
             app:tint="#ff0000" />
 
+        <ImageButton
+            android:id="@+id/photoresistorButton"
+            android:layout_width="70dp"
+            android:layout_height="60dp"
+            android:src="@drawable/photoresistor"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Auto headlights I/O"
+            android:scaleType="centerInside"
+            app:tint="#00FF09" />
+
 
     </LinearLayout>
 
@@ -153,11 +163,10 @@
         android:layout_width="125pt"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        android:max="125"
-        android:min="0"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/joystick" />
 
     <TextView
