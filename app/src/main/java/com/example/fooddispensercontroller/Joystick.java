@@ -20,6 +20,9 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
 
     private Device controlledDevice;
     private long lastSteeringSent = 0;
+
+    private long lastSpeedSent = 0;
+
     private static final int DEBOUNCE_MS = 100;
 
     public interface OnSteeringChangedListener {
@@ -98,8 +101,8 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (controlledDevice != null) {
                     controlledDevice.sendSteering(90);
-                    controlledDevice.setSpeed(0);
                 }
+
                 break;
         }
 
@@ -135,6 +138,11 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     public void onSpeedChanged(int sliderValue) {
         if (controlledDevice == null) return;
 
+        long now = System.currentTimeMillis();
+        if (now - lastSpeedSent < 100) return;  // debounce: o comandă la 100ms
+
+        lastSpeedSent = now;
+
         if (sliderValue == 125) {
             controlledDevice.setSpeed(0);
             return;
@@ -148,6 +156,7 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
         }
         controlledDevice.setSpeed(speed);
     }
+
 
     @Override
     public boolean performClick() {

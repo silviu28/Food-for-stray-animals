@@ -192,7 +192,7 @@ public class ControllerActivity extends AppCompatActivity {
                 case android.view.MotionEvent.ACTION_UP:
                     joystickTouched = false;
                     connectedDevice.sendSteering(90);
-                    connectedDevice.setSpeed(0);
+                   // connectedDevice.setSpeed(0);
                     break;
             }
             return false;

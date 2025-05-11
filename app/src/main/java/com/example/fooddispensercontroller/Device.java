@@ -13,6 +13,8 @@ public class Device {
     private boolean tipperReleased = false;
     private int speed = 0;
     private int steeringAngle = 90;
+
+    private long lastSpeedSent = 0;
     private boolean hazardLightsOn = false;
     private boolean brakesOn = false;
     private boolean headLightsOn = false;
