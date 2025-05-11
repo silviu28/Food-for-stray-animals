@@ -143,6 +143,11 @@ public class Device {
         this.steeringAngle = 90;
         sendCommand(STEERING_RESET);
     }
+    public void sendSteering(int angle) {
+        angle = Math.max(0, Math.min(angle, 180)); // clamp
+        this.steeringAngle = angle;
+        sendCommand(STEERING_BASE + angle);
+    }
 
     public boolean getForwardState() {
         return movingForward;

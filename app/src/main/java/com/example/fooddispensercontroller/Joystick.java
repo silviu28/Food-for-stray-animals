@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -19,14 +18,15 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
     private float baseRadius, hatRadius;
     private float touchX, touchY;
 
-    private boolean isTouched = false;
     private Device controlledDevice;
+    private long lastSteeringSent = 0;
+    private static final int DEBOUNCE_MS = 100;
 
-    public interface OnMoveListener {
-        void onMove(float steering);
+    public interface OnSteeringChangedListener {
+        void onSteeringChanged(int angle);
     }
 
-    private OnMoveListener listener;
+    private OnSteeringChangedListener onSteeringChangedListener;
 
     public Joystick(Context context) {
         super(context);
@@ -61,87 +61,75 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
         drawJoystick(centerX, centerY);
     }
 
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {}
+    @Override public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+    @Override public void surfaceDestroyed(SurfaceHolder holder) {}
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
-                float distance = (float) Math.sqrt(Math.pow(event.getX() - centerX, 2) + Math.pow(event.getY() - centerY, 2));
-                if (distance < baseRadius) {
-                    touchX = event.getX();
-                    touchY = event.getY();
-                } else {
-                    float ratio = baseRadius / distance;
-                    touchX = centerX + (event.getX() - centerX) * ratio;
-                    touchY = centerY + (event.getY() - centerY) * ratio;
+            case MotionEvent.ACTION_DOWN:
+                float dx = x - centerX;
+                float dy = y - centerY;
+                double angleRad = Math.atan2(-dy, dx);
+                int angle = (int) Math.toDegrees(angleRad);
+                angle = (angle + 360) % 360;
+                if (angle > 180) angle = 360 - angle;
+
+                if (System.currentTimeMillis() - lastSteeringSent > DEBOUNCE_MS) {
+                    if (controlledDevice != null) {
+                        controlledDevice.sendSteering(angle);
+                        lastSteeringSent = System.currentTimeMillis();
+                    }
                 }
-                isTouched = true;
+
+                touchX = x;
+                touchY = y;
                 drawJoystick(touchX, touchY);
                 break;
 
             case MotionEvent.ACTION_UP:
                 touchX = centerX;
                 touchY = centerY;
-                isTouched = false;
-                drawJoystick(touchX, touchY);
+                drawJoystick(centerX, centerY);
+
+                if (controlledDevice != null) {
+                    controlledDevice.sendSteering(90);
+                    controlledDevice.setSpeed(0);
+                }
                 break;
         }
 
-        if (controlledDevice != null) {
-            int angle = getSteeringAngle();
-            controlledDevice.setSteeringAngle(angle);
-            if (listener != null) {
-                listener.onMove(angle);
-            }
-        }
-
-        performClick();
         return true;
     }
 
     private void drawJoystick(float newX, float newY) {
         if (getHolder().getSurface().isValid()) {
             Canvas canvas = getHolder().lockCanvas();
-            Paint colors = new Paint();
+            Paint paint = new Paint();
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-            colors.setColor(Color.GRAY);
-            colors.setAlpha(100);
-            canvas.drawCircle(centerX, centerY, baseRadius, colors);
+            paint.setColor(Color.GRAY);
+            paint.setAlpha(100);
+            canvas.drawCircle(centerX, centerY, baseRadius, paint);
 
-            colors.setColor(Color.WHITE);
-            colors.setAlpha(255);
-            canvas.drawCircle(newX, newY, hatRadius, colors);
+            paint.setColor(Color.WHITE);
+            paint.setAlpha(255);
+            canvas.drawCircle(newX, newY, hatRadius, paint);
 
             getHolder().unlockCanvasAndPost(canvas);
         }
-    }
-
-    @Override
-    public boolean performClick() {
-        return super.performClick();
-    }
-
-    public float getNormalizedX() {
-        return (touchX - centerX) / baseRadius;
-    }
-
-    public int getSteeringAngle() {
-        return (int)((-getNormalizedX() + 1) * 90);
     }
 
     public void setControlledDevice(Device device) {
         this.controlledDevice = device;
     }
 
-    public void setOnMoveListener(OnMoveListener listener) {
-        this.listener = listener;
+    public void setOnSteeringChangedListener(OnSteeringChangedListener listener) {
+        this.onSteeringChangedListener = listener;
     }
 
     public void onSpeedChanged(int sliderValue) {
@@ -152,18 +140,17 @@ public class Joystick extends SurfaceView implements SurfaceHolder.Callback {
             return;
         }
 
-        int speed;
-        if (sliderValue < 125) {
-            speed = 125 - sliderValue;
-            if (controlledDevice.getForwardState()) {
-                controlledDevice.toggleReverse();
-            }
-        } else {
-            speed = sliderValue - 125;
-            if (!controlledDevice.getForwardState()) {
-                controlledDevice.toggleReverse();
-            }
+        int speed = sliderValue < 125 ? 125 - sliderValue : sliderValue - 125;
+        boolean forward = sliderValue >= 125;
+
+        if (forward != controlledDevice.getForwardState()) {
+            controlledDevice.toggleReverse();
         }
         controlledDevice.setSpeed(speed);
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 }

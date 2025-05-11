@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class ControllerActivity extends AppCompatActivity {
 
     private Device connectedDevice;
+    private boolean joystickTouched = false;
 
     @RequiresPermission(allOf = {Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN})
     @Override
@@ -54,7 +56,6 @@ public class ControllerActivity extends AppCompatActivity {
             });
             return;
         }
-
 
         Button reselectBtn = this.findViewById(R.id.selectDeviceButton);
         reselectBtn.setOnClickListener(v -> runOnUiThread(() -> {
@@ -181,12 +182,45 @@ public class ControllerActivity extends AppCompatActivity {
     private void configureJoystick() {
         Joystick joystick = this.findViewById(R.id.joystick);
         joystick.setControlledDevice(this.connectedDevice);
-        joystick.setOnMoveListener(steering ->
-            runOnUiThread(() -> {
-                TextView steerText = findViewById(R.id.steeringText);
-                steerText.setText("Steering: " + steering + "°");
-            })
-        );
+
+        joystick.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                case android.view.MotionEvent.ACTION_MOVE:
+                    joystickTouched = true;
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                    joystickTouched = false;
+                    connectedDevice.sendSteering(90);
+                    connectedDevice.setSpeed(0);
+                    break;
+            }
+            return false;
+        });
+
+        joystick.setOnSteeringChangedListener(angle -> {
+            TextView steerText = findViewById(R.id.steeringText);
+            steerText.setText("Steering: " + angle + "°");
+        });
+
+
+        final Handler handler = new Handler();
+        final int[] latestSteering = {90};
+        final Runnable[] steeringRunnable = {null};
+
+        joystick.setOnSteeringChangedListener(steering -> {
+            latestSteering[0] = steering;
+            if (steeringRunnable[0] != null)
+                handler.removeCallbacks(steeringRunnable[0]);
+
+            steeringRunnable[0] = () -> {
+                if (joystickTouched && connectedDevice.getEngineState()) {
+                    connectedDevice.sendSteering(latestSteering[0]);
+                }
+            };
+            handler.postDelayed(steeringRunnable[0], 100);
+        });
+
         SeekBar speedbar = this.findViewById(R.id.speedSlider);
         speedbar.setMax(250);
         speedbar.setProgress(125);
@@ -216,7 +250,6 @@ public class ControllerActivity extends AppCompatActivity {
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
-
 
     private void pollDevice() {
         new Thread(() -> {
