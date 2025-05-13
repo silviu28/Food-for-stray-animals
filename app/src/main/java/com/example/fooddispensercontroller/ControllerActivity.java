@@ -199,8 +199,10 @@ public class ControllerActivity extends AppCompatActivity {
         });
 
         joystick.setOnSteeringChangedListener(angle -> {
-            TextView steerText = findViewById(R.id.steeringText);
-            steerText.setText("Steering: " + angle + "°");
+            runOnUiThread(() -> {
+                TextView steerText = findViewById(R.id.steeringText);
+                steerText.setText("Steering: " + angle + "°");
+            });
         });
 
 
