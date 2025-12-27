@@ -9,6 +9,7 @@ Prerequisites:
 * Java 11 or higher
 * Android SDK 35
 * ADB/build-tools (optional, if you don't want to manually install the APK)
+* An Android device or emulator, running Oreo or higher
   
 To build the project, run in the project's root directory:
 
